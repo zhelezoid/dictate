@@ -28,7 +28,8 @@ security add-generic-password -U -a dictate -s dictate-xai -w
    - **Accessibility** → `+` → `~/Applications/Dictate.app` — вкл (глобальная клавиша и вставка ⌘V);
    - **Input Monitoring** → Dictate — вкл, если клавиша не ловится.
 4. **System Settings → Keyboard → «Press 🌐 key to» → «Do Nothing»**. Иначе на `fn` будет открываться панель эмодзи.
-5. Настройки: иконка в строке меню → «Настройки и словарь…» (это `~/.config/dictate/config.json`, пример — [config.example.json](config.example.json)) → «Перечитать настройки».
+5. Модели xAI уже выбраны и прописаны — **не менять** (почему — [AGENTS.md](../AGENTS.md), «Модели»).
+6. Настройки: иконка в строке меню → «Настройки и словарь…» (это `~/.config/dictate/config.json`, пример — [config.example.json](config.example.json)) → «Перечитать настройки».
 
 **Подпись.** `build.sh` подписывает сертификатом «Apple Development». Его можно получить бесплатно: Xcode → Settings → Accounts → войти Apple ID. Без сертификата сборка подписывается ad-hoc, и тогда разрешения из шага 3 слетают после каждой пересборки. Другой сертификат: `DICTATE_SIGN_IDENTITY="…" ./build.sh`.
 
