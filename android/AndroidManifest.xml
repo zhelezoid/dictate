@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="app.dictate"
+    android:versionCode="1"
+    android:versionName="0.1">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Боковая кнопка: запись в службе, пока окно приложения закрыто -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Обновления без провода (Updater): поставить скачанную новую версию себя. Разрешение «из этого источника» — по проводу, sync.sh -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Тихое самообновление (USER_ACTION_NOT_REQUIRED) без него молча превращается в «нужно подтверждение» (14.10) -->
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
+    <!-- JobScheduler с условием «есть сеть» (Pending) без него — SecurityException; 14.10 так падала клавиатура -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Android 11+: без этого TextToSpeech не видит движок синтеза речи (озвучка разговора) -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
+
+        <activity
+            android:name=".SettingsActivity"
+            android:theme="@android:style/Theme.DeviceDefault.DayNight"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Переводчик: отдельный значок на рабочем столе; с боковой кнопки без поля ввода открывается сам -->
+        <activity
+            android:name=".TranslatorActivity"
+            android:theme="@android:style/Theme.DeviceDefault.DayNight"
+            android:exported="true"
+            android:label="Переводчик"
+            android:launchMode="singleTop"
+            android:taskAffinity="app.dictate.translator"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Вход «сразу слушай» (боковая кнопка без поля): только изнутри Dictate — чужое приложение не включит микрофон -->
+        <activity-alias
+            android:name=".TranslatorListen"
+            android:targetActivity=".TranslatorActivity"
+            android:exported="false" />
+
+        <!-- «Цифровой помощник»: долгое нажатие боковой кнопки → вкл/выкл записи -->
+        <activity
+            android:name=".AssistActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:launchMode="singleInstance">
+            <intent-filter>
+                <action android:name="android.intent.action.ASSIST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- Вход плавающей кнопки: только изнутри Dictate (16.10.2026) — exported-окно помощника чужое приложение могло бы
+             открыть и включить микрофон -->
+        <activity-alias
+            android:name=".FloatHold"
+            android:targetActivity=".AssistActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".UpdateActivity"
+            android:exported="false"
+            android:label="Обновление Dictate"
+            android:theme="@android:style/Theme.DeviceDefault.Dialog.Alert"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:launchMode="singleTask" />
+
+        <receiver
+            android:name=".UpdateReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Записи без сети: распознать, когда сеть появится (Pending) -->
+        <service
+            android:name=".PendingJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver
+            android:name=".CopyReceiver"
+            android:exported="false" />
+
+        <!-- Итог тихого обновления при погасшем экране -->
+        <receiver
+            android:name=".InstallStatusReceiver"
+            android:exported="false" />
+
+        <service
+            android:name=".VoiceService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+
+        <service
+            android:name=".DictateA11y"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/a11y" />
+        </service>
+
+        <service
+            android:name=".DictateIME"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data android:name="android.view.im" android:resource="@xml/method" />
+        </service>
+    </application>
+</manifest>

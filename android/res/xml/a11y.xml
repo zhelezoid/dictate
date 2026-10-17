@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Вставка надиктованного текста в поле с курсором, плашка состояния, плавающая кнопка. События — только «окна изменились»
+     (прятать кнопку при открытой клавиатуре); содержимое экрана не читается, кроме поиска поля с курсором в момент вставки -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/a11y_description"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowsChanged"
+    android:accessibilityFlags="flagRetrieveInteractiveWindows"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:notificationTimeout="100"
+    android:canRetrieveWindowContent="true"
+    android:isAccessibilityTool="false" />

@@ -1,0 +1,26 @@
+{
+  "hotkey": "fn",
+  "provider": "xai",
+  "language": "ru",
+  "streaming": true,
+  "cleanup": true,
+  "cleanupAlways": false,
+  "sounds": true,
+  "historyDays": 14,
+  "memoryLearn": true,
+  "translateModel": "grok-4.5",
+  "translateEffort": "low",
+  "dictionary": ["Claude Code", "Docker", "Telegram", "Wildberries", "Иван Петров"],
+  "replacements": {
+    "клод код": "Claude Code",
+    "вайлдберриз": "Wildberries"
+  },
+  "translateGlossary": {
+    "нейронка / нейронки / нейронку": "AI",
+    "на бою": "in production"
+  },
+  "links": {
+    "MyShop": { "ru": "https://example.com/ru", "en": "https://example.com/en" }
+  },
+  "extraInstructions": ""
+}

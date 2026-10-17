@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dictate</string>
+    <string name="a11y_description">Диктовка с боковой кнопки: вставляет надиктованный текст в поле, где стоит курсор, и показывает плашку записи. Содержимое экрана не сохраняется и никуда не отправляется.</string>
+</resources>

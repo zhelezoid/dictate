@@ -1,0 +1,23 @@
+{
+  "language": "ru",
+  "sttModel": "grok-voice-transcribe-2.0",
+  "llmModel": "grok-4.20-0309-non-reasoning",
+  "translateModel": "grok-4.5",
+  "translateEffort": "low",
+  "cleanup": true,
+  "streaming": true,
+  "historyDays": 14,
+  "dictionary": ["Wildberries", "Ozon", "Kubernetes", "Иван Петров"],
+  "replacements": {
+    "Вайлдберриз": "Wildberries",
+    "Озон": "Ozon",
+    "кубернетис": "Kubernetes"
+  },
+  "translateGlossary": {
+    "нейронка / нейронки / нейронку": "AI",
+    "на бою": "in production"
+  },
+  "links": {
+    "MyShop": { "ru": "https://example.com/ru", "en": "https://example.com/en" }
+  }
+}

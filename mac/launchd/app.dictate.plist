@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>app.dictate</string>
+  <key>ProgramArguments</key>
+  <array><string>__HOME__/Applications/Dictate.app/Contents/MacOS/Dictate</string></array>
+  <key>RunAtLoad</key><true/>
+  <!-- Перезапуск только после падения: «Выход» из меню — штатный exit(0), его не трогаем -->
+  <key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>
+  <key>ThrottleInterval</key><integer>3</integer>
+  <key>ProcessType</key><string>Interactive</string>
+  <key>StandardErrorPath</key><string>__HOME__/.config/dictate/stderr.log</string>
+</dict>
+</plist>
