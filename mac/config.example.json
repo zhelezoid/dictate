@@ -7,6 +7,7 @@
   "streaming": true,
   "cleanup": true,
   "cleanupAlways": false,
+  "terminalPlain": true,
   "sounds": true,
   "historyDays": 14,
   "memoryLearn": true,
