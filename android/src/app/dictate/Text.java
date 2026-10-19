@@ -481,10 +481,17 @@ final class Text {
         if (!"ru".equals(cfg.language)) return false;
         List<String> words = new ArrayList<>();
         for (String w : text.split("[^\\p{L}\\p{N}]+")) if (w.matches(".*\\p{L}.*")) words.add(w);
-        int spoken = 0;
-        for (String w : text.trim().split("\\s+")) if (w.matches(".*\\p{L}.*")) spoken++;
-        if (words.isEmpty() || spoken > 4) return false;
-        for (String w : words) for (int i = 0; i < w.length(); i++) { char c = w.charAt(i); if (c >= 0x0400 && c <= 0x04FF) return false; }
+        if (words.isEmpty()) return false;
+        // Латиницей начало русской фразы (1–4 слова, дальше кириллица): стрим портит первое слово — «Добрый день» → «Doberge»
+        // (перевод на VI 19.10.2026), «Здорово» → «Zdorova»; batch в истории Mac давал верно во всех 18 случаях
+        int firstCyr = -1;
+        for (int j = 0; j < words.size() && firstCyr < 0; j++) { String w = words.get(j); for (int i = 0; i < w.length(); i++) { char c = w.charAt(i); if (c >= 0x0400 && c <= 0x04FF) { firstCyr = j; break; } } }
+        if (firstCyr == 0 || firstCyr > 4) return false;
+        if (firstCyr < 0) {
+            int spoken = 0;
+            for (String w : text.trim().split("\\s+")) if (w.matches(".*\\p{L}.*")) spoken++;
+            if (spoken > 4) return false;
+        } else words = words.subList(0, firstCyr);
         Set<String> known = new HashSet<>(java.util.Arrays.asList("ok", "okay")); // «окей» стрим пишет «Okay.» — это и сказано
         List<String> src = new ArrayList<>(cfg.dictionary);
         src.addAll(cfg.replacements.values());

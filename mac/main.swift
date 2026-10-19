@@ -935,12 +935,17 @@ func fixImperatives(_ text: String) -> (String, Int) {
 func suspiciousLatin(_ text: String, cfg: Config) -> Bool {
     guard cfg.language == "ru" else { return false }
     let words = text.split { !$0.isLetter && !$0.isNumber }.map(String.init).filter { $0.contains(where: \.isLetter) }
-    let spoken = text.split(whereSeparator: \.isWhitespace).filter { $0.contains(where: \.isLetter) }.count
-    guard !words.isEmpty, spoken <= 4, !words.contains(where: { $0.contains(where: \.isCyrillic) }) else { return false }
+    guard !words.isEmpty else { return false }
     // «окей» стрим пишет «Okay.» — это и сказано, ждать batch незачем
     let known = Set((cfg.dictionary + Array(cfg.replacements.values) + Memory.load().terms)
         .flatMap { $0.lowercased().split { !$0.isLetter && !$0.isNumber }.map(String.init) }).union(["ok", "okay"])
-    return words.contains { !known.contains($0.lowercased()) }
+    // Латиницей начало русской фразы (1–4 слова, дальше кириллица): стрим портит первое слово — «Добрый день» → «Doberge»,
+    // «Здорово» → «Zdorova», «Поставь Джон» → «Pastaf, John»; batch во всех 18 случаях истории дал верно (19.10.2026)
+    if let firstCyr = words.firstIndex(where: { $0.contains(where: \.isCyrillic) }) {
+        return firstCyr > 0 && firstCyr <= 4 && words[..<firstCyr].contains { !known.contains($0.lowercased()) }
+    }
+    let spoken = text.split(whereSeparator: \.isWhitespace).filter { $0.contains(where: \.isLetter) }.count
+    return spoken <= 4 && words.contains { !known.contains($0.lowercased()) }
 }
 
 /// Короткие ответы переводятся таблицей, без нейросети — мгновенно (пользователь 17.10.2026, «нет»,
