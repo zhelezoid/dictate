@@ -684,9 +684,24 @@ let emailSpokenRe = try! NSRegularExpression(pattern:
 let emailDigitsGmailRe = try! NSRegularExpression(pattern:
     "(?i)(?<![\\p{L}\\d@.])(\\d+(?:[\\s-]+\\d+)*)[\\s,]+(?:gmail|джимейл|гмейл)(?:(?:\\s*(?:\\.|точка)\\s*|\\s+)(?:com|ком))?(?![\\p{L}\\d@]|\\.[\\p{L}\\d])")
 
+/// «домен, точка ком» — STT ставит запятые вокруг «точка»; без этого зона оставалась хвостом: «имя@домен.com, точка ком.»
+/// Только перед зоной — «такая точка, понимаешь» не трогаем
+let emailDotCommaRe = try! NSRegularExpression(pattern:
+    "(?i)[\\s,]+точка[\\s,]+(?=(?:ком|нет|ру|орг|ио|тр|com|net|ru|org|io|tr)(?![\\p{L}])(?!\\s+\\p{L}))") // «точка, нет вопросов» — не зона
+/// STT потерял «собака»: «на мой адрес <имя>, э, <свой домен> точка <зона>» (5 провалов перевода 13–14.10.2026 на телефоне — перевод
+/// сам собирал адрес, а проверка «новый адрес в ответе» его отбрасывала). Только латинское имя + свой домен (не gmail) + «точка»:
+/// «заходи на <свой домен> точка ком» (сайт) и кириллическое имя — не адрес. Список доменов — из emailDomainWords
+let emailNoDogRe: NSRegularExpression = {
+    let own = emailDomainWords.filter { $0.value != "gmail" && !$0.key.contains(".") }.keys.sorted { $0.count > $1.count }
+        .map(NSRegularExpression.escapedPattern(for:)).joined(separator: "|")
+    return try! NSRegularExpression(pattern:
+        "(?i)(?<![\\p{L}\\d@.])([a-z][a-z\\d._-]*)(?<!sobaka)[\\s,]+(?:э+[\\s,]+)?(?:собака)?(\(own))(?= точка )")
+}()
+
 func fixEmails(_ text: String) -> String {
+    var text = emailDotCommaRe.stringByReplacingMatches(in: text, range: NSRange(location: 0, length: (text as NSString).length), withTemplate: " точка ")
+    text = emailNoDogRe.stringByReplacingMatches(in: text, range: NSRange(location: 0, length: (text as NSString).length), withTemplate: "$1 собака $2")
     let ns0 = text as NSString
-    var text = text
     for m in emailDigitsGmailRe.matches(in: text, range: NSRange(location: 0, length: ns0.length)).reversed() {
         let digits = ns0.substring(with: m.range(at: 1)).filter(\.isNumber)
         guard digits.count >= 5 else { continue }

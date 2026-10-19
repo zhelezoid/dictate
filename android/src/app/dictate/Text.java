@@ -84,7 +84,24 @@ final class Text {
     private static final Pattern EMAIL_DIGITS_GMAIL = Pattern.compile(
             "(?<![\\p{L}\\d@.])(\\d+(?:[\\s-]+\\d+)*)[\\s,]+(?:gmail|джимейл|гмейл)(?:(?:\\s*(?:\\.|точка)\\s*|\\s+)(?:com|ком))?(?![\\p{L}\\d@]|\\.[\\p{L}\\d])", CI);
 
+    /** «домен, точка ком» — запятые вокруг «точка» перед зоной (иначе «имя@домен.com, точка ком.»); как в main.swift */
+    private static final Pattern EMAIL_DOT_COMMA = Pattern.compile(
+            "[\\s,]+точка[\\s,]+(?=(?:ком|нет|ру|орг|ио|тр|com|net|ru|org|io|tr)(?![\\p{L}])(?!\\s+\\p{L}))", CI); // «точка, нет вопросов» — не зона
+    /** STT потерял «собака»: «мой адрес <имя>, э, <свой домен> точка <зона>» (5 провалов перевода 13–14.10.2026). Только латинское
+     *  имя + свой домен (не gmail) + «точка» — сайт и кириллическое имя не адрес. Список — из EMAIL_DOMAIN, как в main.swift */
+    private static Pattern emailNoDog;
+    private static Pattern emailNoDog() {
+        if (emailNoDog == null) {
+            List<String> own = new ArrayList<>();
+            for (Map.Entry<String, String> e : EMAIL_DOMAIN.entrySet()) if (!e.getValue().equals("gmail") && !e.getKey().contains(".")) own.add(Pattern.quote(e.getKey()));
+            emailNoDog = Pattern.compile("(?<![\\p{L}\\d@.])([a-z][a-z\\d._-]*)(?<!sobaka)[\\s,]+(?:э+[\\s,]+)?(?:собака)?(" + String.join("|", own) + ")(?= точка )", CI);
+        }
+        return emailNoDog;
+    }
+
     static String fixEmails(String text) {
+        text = EMAIL_DOT_COMMA.matcher(text).replaceAll(" точка ");
+        text = emailNoDog().matcher(text).replaceAll("$1 собака $2");
         Matcher g = EMAIL_DIGITS_GMAIL.matcher(text);
         StringBuilder pre = new StringBuilder();
         int from = 0;
